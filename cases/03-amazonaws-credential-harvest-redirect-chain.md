@@ -1,4 +1,3 @@
-vvvvvvvv<span style="color:#d33">*This entire template is a Claude draft — copy it for each new case and edit freely.*</span>
 
 # Case 03 - AWS typosquatting: Credential Harvester
 
