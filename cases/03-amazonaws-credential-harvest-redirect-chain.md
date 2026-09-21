@@ -1,5 +1,5 @@
 
-# Case 03 - AWS typosquatting: Credential Harvester
+# Case 03 - AWS Combosquatting: Credential Harvester
 
 | | |
 |---|---|
@@ -7,7 +7,7 @@
 | **Severity** | High - Direct brand imitation of a well known cloud service provider (aws.amazon) via typosquatting. |
 | **Type** | Credential harvest |
 | **Sample** | `https://phishtank.org/phish_detail.php?phish_id=9526640&frame=details` |
-| **MITRE ATT&CK** | T1566.002 - Spearphishing Link|
+| **MITRE ATT&CK** | T1598.003: Phishing for Information|
 
 ![PhishTank Result](../images/case03-01-PhishTank-Result)
 
@@ -58,7 +58,7 @@ Let's analyze the results we got from using whois on the fake domain.
 
 Starting with the registrar: NameSilo, a legitimate registrar. 
 
-However, in recent investigations from `https://phishdestroy.io/namesilo-evidence` NameSilo has been associated with 5,666 confirmed phishing domains across a registrar with 5.25 million total registrations.
+However, according to "PhishDestroy" `https://phishdestroy.io/namesilo-evidence` NameSilo has been associated with 5,666 confirmed phishing domains across a registrar with 5.25 million total registrations.
 
 Although a legitimate Registrar the data tells us that attackers make use of the reputation of real Registrars to further add credibility to their phishing attacks.
 
@@ -132,7 +132,7 @@ From the historical scan of the compromised page we can see that it leads us to 
 - **URL (defanged):** `hxxps://aws-support-cloud[.]com/cp[.]php`
   — credential-harvesting page; 16/91 VirusTotal vendors flagged as Phishing
 - **Redirect chain:**
-  1. `hxxps://aws-support-cloud[.]com/` → HTTP 302
+  1. `hxxps://aws-support-cloud[.]com/` → HTTP 302 (observed from urlscan.io)
   2. `hxxps://aws-support-cloud[.]com/cp[.]php` → Page URL (final destination, likely where the harvesting of credential happens.)
   
   Short two-hop chain the root domain immediately redirects to the 
@@ -152,11 +152,10 @@ All indicators point towards  the same conclusion:
   throwaway infrastructure. Combosquatting `aws.amazon.com` via 
   `aws-support-cloud[.]com`. Suspended (clientHold) by registrar 
   at time of investigation - consistent with urlscan.io giving `no classification` as a verdict.
-- **Hosting:** IP `45.74.61[.]10` on AS-69HOST (AS205397), 
-  an abuse-tolerant provider; 8/89 VirusTotal vendors flagged as 
+- **Hosting:** IP `45.74.61[.]10` on AS-69HOST (AS205397), 8/89 VirusTotal vendors flagged as 
   Phishing/Malicious/Malware; Spamhaus ZEN listed; self-signed TLS 
   certificate; community score on VirusTotal -9.
-- **Content:** Page impersonates AWS support portal to harvest credentials 
+- **Content:** Through inference from infraastructure the page likely impersonates AWS support portal to harvest credentials 
   via `/cp.php` - a known phishing-kit endpoint pattern attackers use to blend in.
 - **No contradictory signals:** Unlike some cases where there are authentication passes 
   but the content is malicious, here every evidence we found such as: domain age, 
