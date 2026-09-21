@@ -1,4 +1,4 @@
-<span style="color:#d33">*This entire template is a Claude draft — copy it for each new case and edit freely.*</span>
+vvvvvvvv<span style="color:#d33">*This entire template is a Claude draft — copy it for each new case and edit freely.*</span>
 
 # Case 03 - AWS typosquatting: Credential Harvester
 
@@ -87,11 +87,6 @@ Now moving toward the status of the domain **clientHold**; this tells us that th
 | CDN IP | `151.101.129[.]155` | — | — | Fastly CDN — legitimate shared infrastructure, not attacker-controlled |
 | urlscan.io | `aws-support-cloud[.]com` | No classification | — | Likely scanned post-suspension; domain non-resolving |
 
-> The Spamhaus ZEN listing on `45.74.61.10` carries higher confidence than a listing
-> on a secondary blacklist — Spamhaus is widely trusted and rarely generates
-> false positives. Unlike shared cloud/CDN IPs, `45.74.61.10` belongs to a small
-> dedicated hosting provider (69HOST LLC), making this hit directly attributable
-> to this specific phishing infrastructure rather than collateral from other tenants.
 
 ![Results of VirusTotal](../images/case03-04-virustotal-results)
 
@@ -123,48 +118,80 @@ Based from the reporters and their comments on the IP we can deduce that the IP 
 ![IP blacklisted in mxlookup](../images/case03-10-mxlookup-IP)
 
 On mxlookup we can identify that the IP is on the blacklist namely MAILSPIKE BL, MAILSPIKE Z, **Spamhaus ZEN**. The IP getting a hit on MAILSPIKE which is a list of spam/malicious IPs is already good evidence. But another strong evidence which backs this up is Spamhaus ZEN which is one of the most recognized and widely trusted blacklists in existence. The IP being listed in Spamhaus means that it has a well documented history of malicious activity, which we have seen from the AbuseIPDB with reports dating back 3 years ago.
-> **Note:** urlscan.io's no-verdict is explained by the `clientHold` status —
-> the domain was likely non-resolving at scan time, not an indicator of legitimacy.
+> **Note:** urlscan.io's no-verdict is explained by the `clientHold` status -
+> the domain was likely non-resolving at scan time, this is not an indicator that the site is legitimate.
 
-## 5. Content analysis
+## 5. Website Analysis
+![Fake Domain Security Check Interface](../images/case03-02-fake-domain-screenshot)
+*(Based on urlscan.io historical scan — page not visited directly)*
 
-What does the email ask the recipient to do? Note: brand impersonation, urgency, financial or credential ask, mismatch between claimed organisation and actual sending domain, generic greeting, grammar.
+From the historical scan of the compromised page we can see that it leads us to a captcha page. Attackers didn't just use this without a reason, the likely reason for this is **Anti analysis/Evasion** so they can avoid automated scanners such as the one we used in this investigation **urlscan.io** which explains why the verdict on the website was **no classification**. The automated scanner of urlscan.io was not able to get past the captcha thus not being able to see the actual phishing content, this also explains why all images from the history of the scanning only composed of captcha images.
 
 ## 6. Payload
 
-- **Links:** extracted and defanged; urlscan.io / VirusTotal results; redirect chain if any
-- **Attachments:** filename, type, SHA-256, VirusTotal / sandbox verdict — *never executed*
-- **Callback numbers:** listed as IOCs
+- **URL (defanged):** `hxxps://aws-support-cloud[.]com/cp[.]php`
+  — credential-harvesting page; 16/91 VirusTotal vendors flagged as Phishing
+- **Redirect chain:**
+  1. `hxxps://aws-support-cloud[.]com/` → HTTP 302
+  2. `hxxps://aws-support-cloud[.]com/cp[.]php` → Page URL (final destination, likely where the harvesting of credential happens.)
+  
+  Short two-hop chain the root domain immediately redirects to the 
+  harvesting endpoint. No intermediary redirectors or URL shorteners used.
+- **Attachments:** None - URL-only phishing, no file payload
+- **Callback numbers:** None identified
+- **urlscan.io:** No classification - consistent with domain being 
+  non-resolving (clientHold) at scan time and also possibly due to not getting past the captcha.
 
-## 7. Verdict & reasoning
+## 7. Verdict & Reasoning
 
-Why this verdict, in analyst terms. Address any contradictory signals (e.g. auth passes but content is malicious) and explain them.
+**Verdict: Malicious — Credential Harvesting Phishing (High Confidence)**
+
+All indicators point towards  the same conclusion:
+
+- **Domain:** Registered < 48 hours before PhishTank submission this points toward the domain being a 
+  throwaway infrastructure. Combosquatting `aws.amazon.com` via 
+  `aws-support-cloud[.]com`. Suspended (clientHold) by registrar 
+  at time of investigation - consistent with urlscan.io giving `no classification` as a verdict.
+- **Hosting:** IP `45.74.61[.]10` on AS-69HOST (AS205397), 
+  an abuse-tolerant provider; 8/89 VirusTotal vendors flagged as 
+  Phishing/Malicious/Malware; Spamhaus ZEN listed; self-signed TLS 
+  certificate; community score on VirusTotal -9.
+- **Content:** Page impersonates AWS support portal to harvest credentials 
+  via `/cp.php` - a known phishing-kit endpoint pattern attackers use to blend in.
+- **No contradictory signals:** Unlike some cases where there are authentication passes 
+  but the content is malicious, here every evidence we found such as: domain age, 
+  hosting reputation, vendor detections, infrastructure, and content — 
+  points to the domain having malicious intent.
 
 ## 8. Indicators of Compromise
 
 | Type | Value (defanged) | Context |
 |---|---|---|
-| Email | | From / Reply-To |
-| Domain | | |
-| IPv4 | | sender IP |
-| URL | `hxxp://` | |
-| Phone | | callback lure |
-| File hash | | .eml sample |
+| Domain | `aws-support-cloud[.]com` | Typosquatting target: aws.amazon.com; registered 2026-09-16; clientHold status |
+| IPv4 | `45.74.61[.]10` | Hosting IP — AS-69HOST (AS205397); 8/89 VirusTotal; Spamhaus ZEN listed; self-signed TLS |
+| URL | `hxxps://aws-support-cloud[.]com/cp[.]php` | Credential harvesting endpoint |
+| Registration date | 2026-09-16 | Domain age < 48 hours at time of detection |
+| Registrar abuse contact | abuse@namesilo.com | NameSilo, LLC - report here for takedown (got from WHOIS) |
 
 ## 9. MITRE ATT&CK
 
 | ID | Technique | How it applies |
 |---|---|---|
-| | | |
+| T1598.003 | Phishing for Information: Spearphishing Link | Credential-harvesting page designed to collect user AWS login credentials via a malicious link - primary technique which is based on the evidence (`/cp.php` endpoint, PhishTank classification) |
+| T1566.002 | Phishing: Spearphishing Link | Cannot be ruled out - harvested AWS credentials could possibly be used for Initial Access into the cloud environment of the victim. However, the technique depends on the follow-on intent of the the attacker which cannot be observed just from this sample.
+| T1036.005 | Masquerading: Match Legitimate Name or Location | Domain combosquats `aws.amazon.com` via `aws-support-cloud[.]com` to appear legitimate |
 
-## 10. Recommended actions
+## 10. Recommended Actions
 
-1. Block sender address / domain at the mail gateway
-2. Search and purge from all mailboxes (scope by Subject, sender, Message-ID)
-3. Add IOCs to blocklists
-4. Report abuse to the hosting / mail provider where infrastructure is compromised
-5. User awareness note if appropriate
+1. **Block domain and IP at perimeter:** Add `aws-support-cloud[.]com` 
+   and `45.74.61[.]10` to the DNS/firewall blocklists
+2. **Report to registrar:** Email abuse@namesilo.com. However, through the observable clientHold status
+    this may already have been done; confirm and escalate if not
+3. **Report to hosting provider:** Report `45.74.61[.]10` / AS-69HOST 
+   (AS205397) abuse - check their abuse contact via ARIN/RIPE
+4. **Add IOCs to threat-intel feeds:** Domain, IP, and URL to 
+   internal blocklists and shared threat-intel platforms
+5. **User awareness:** If users may have encountered this link, 
+   advise them to change AWS credentials immediately and enable MFA.
 
-## Evidence
 
-Screenshots referenced above.
