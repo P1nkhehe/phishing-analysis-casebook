@@ -122,6 +122,7 @@ On mxlookup we can identify that the IP is on the blacklist namely MAILSPIKE BL,
 
 ## 5. Website Analysis
 ![Fake Domain Security Check Interface](../images/case03-02-fake-domain-screenshot)
+
 *(Based on urlscan.io historical scan — page not visited directly)*
 
 From the historical scan of the compromised page we can see that it leads us to a captcha page. Attackers didn't just use this without a reason, the likely reason for this is **Anti analysis/Evasion** so they can avoid automated scanners such as the one we used in this investigation **urlscan.io** which explains why the verdict on the website was **no classification**. The automated scanner of urlscan.io was not able to get past the captcha thus not being able to see the actual phishing content, this also explains why all images from the history of the scanning only composed of captcha images.
