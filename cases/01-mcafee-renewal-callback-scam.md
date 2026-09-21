@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Verdict** | **Malicious**</span> |
-| **Severity** | Low–Medium - commodity callback scam; no malware or link payload, but the fake USD 567.11 charge is designed to make recipients phone the attacker by giving then a sense of urgency. |
+| **Severity** | Low–Medium - commodity callback scam; no malware or link payload, but the fake USD 567.11 charge is designed to make recipients phone the attacker by giving them a sense of urgency. |
 | **Type** | Callback phishing (telephone-oriented attack delivery, "TOAD") |
 | **Sample** | `031a34cf755e1774016d4d4ed1d6ea5c8185d3091bdabdd67739ad6a6c42ad6b.eml` |
 | **MITRE ATT&CK** | T1566.004 — Phishing: Spearphishing Voice |
 
 ## 1. Summary of the Email
 
-An email claiming it confirmed an automatic McAfee subscription renewal of USD 567.11, sent from an unrelated domain (`gemalim[.]org`) and delivered through the recipient via a Google Calendar invitation. Both DKIM signatures fail, the sender domain publishes no SPF or DMARC record, and the only call to action is a phone number - which is one of the defining characteristics of a callback scam where the victim is talked into granting remote access or "refund" payments over the phone.
+An email claiming it confirmed an automatic McAfee subscription renewal of USD 567.11, sent from an unrelated domain (`gemalim[.]org`) and delivered to the recipient via a Google Calendar invitation. Both DKIM signatures fail, the sender domain publishes no SPF or DMARC record, and the only call to action is a phone number - which is one of the defining characteristics of a callback scam where the victim is talked into granting remote access or "refund" payments over the phone.
 
 ## 2. Header analysis
 
@@ -83,8 +83,8 @@ As you can see the email is all about a subscription renewal for McAfee which is
 
 ## 5. Payload
 
-- **Links:** none</span>
-- **Attachments:** none</span>
+- **Links:** none
+- **Attachments:** none
 - **Callback numbers:** `(803) 227-9121`, `+1-865-489-7049`
 
 ## 6. Verdict & reasoning
